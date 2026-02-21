@@ -87,10 +87,10 @@ async fn run_scrape(
             .s3_secret_key
             .as_ref()
             .ok_or_else(|| anyhow::anyhow!("S3_SECRET_KEY required when --photos is set"))?;
-        Some(
-            RustFsClient::new(endpoint, &config.s3_bucket, access_key, secret_key, &config.s3_region)
-                .await?,
-        )
+        let client = RustFsClient::new(endpoint, &config.s3_bucket, access_key, secret_key, &config.s3_region)
+            .await?;
+        client.ensure_bucket().await?;
+        Some(client)
     } else {
         None
     };

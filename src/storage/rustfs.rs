@@ -1,5 +1,6 @@
 use s3::bucket::Bucket;
 use s3::creds::Credentials;
+use s3::BucketConfiguration;
 use s3::Region;
 use tracing::info;
 
@@ -8,6 +9,8 @@ use crate::error::{ArachneError, Result};
 /// S3-compatible client for RustFS (MinIO-compatible object storage).
 pub struct RustFsClient {
     bucket: Box<Bucket>,
+    region: Region,
+    credentials: Credentials,
 }
 
 impl RustFsClient {
@@ -32,14 +35,51 @@ impl RustFsClient {
         )
         .map_err(|e| ArachneError::S3(format!("invalid credentials: {e}")))?;
 
-        let mut bucket = Bucket::new(bucket_name, region, credentials)
+        let mut bucket = Bucket::new(bucket_name, region.clone(), credentials.clone())
             .map_err(|e| ArachneError::S3(format!("bucket init error: {e}")))?;
 
         bucket.set_path_style();
 
         info!(endpoint, bucket_name, "RustFS client initialized");
 
-        Ok(Self { bucket })
+        Ok(Self {
+            bucket,
+            region,
+            credentials,
+        })
+    }
+
+    /// Ensure the bucket exists, creating it if necessary.
+    /// Idempotent: ignores BucketAlreadyOwnedByYou / BucketAlreadyExists errors.
+    pub async fn ensure_bucket(&self) -> Result<()> {
+        let bucket_name = self.bucket.name();
+        let result = Bucket::create_with_path_style(
+            &bucket_name,
+            self.region.clone(),
+            self.credentials.clone(),
+            BucketConfiguration::default(),
+        )
+        .await;
+
+        match result {
+            Ok(_) => {
+                info!(%bucket_name, "bucket created");
+                Ok(())
+            }
+            Err(e) => {
+                let err_str = e.to_string();
+                if err_str.contains("BucketAlreadyOwnedByYou")
+                    || err_str.contains("BucketAlreadyExists")
+                {
+                    info!(%bucket_name, "bucket already exists");
+                    Ok(())
+                } else {
+                    Err(ArachneError::S3(format!(
+                        "failed to create bucket '{bucket_name}': {e}"
+                    )))
+                }
+            }
+        }
     }
 
     /// Upload bytes to the given key.
