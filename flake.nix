@@ -43,7 +43,7 @@
       packageName = "arachne";
       namespace = "arachne-system";
       architectures = ["amd64" "arm64"];
-      ports = { graphql = 8080; health = 8080; metrics = 8080; };
+      ports = { graphql = 8080; health = 8081; metrics = 9090; };
     };
   in {
     packages = eachSystem (system: (mkOutputs system).packages);
