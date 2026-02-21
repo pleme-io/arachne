@@ -2,6 +2,9 @@
 name = "arachne"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Classifieds scraper service with browser automation, photo deduplication, and S3 storage"
+repository = "https://github.com/pleme-io/arachne"
 
 [[bin]]
 name = "arachne"
