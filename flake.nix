@@ -1,5 +1,5 @@
 {
-  description = "Arachne - Classifieds scraper service for prospect database building";
+  description = "Arachne - Generic classifieds scraping framework";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -12,29 +12,45 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.fenix.follows = "fenix";
     };
-    forge = {
-      url = "github:pleme-io/forge";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.fenix.follows = "fenix";
-      inputs.substrate.follows = "substrate";
-      inputs.crate2nix.follows = "crate2nix";
-    };
     crate2nix = {
       url = "github:nix-community/crate2nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, substrate, forge, crate2nix, ... }:
-    (import "${substrate}/lib/rust-service-flake.nix" {
-      inherit nixpkgs substrate forge crate2nix;
-    }) {
-      inherit self;
-      serviceName = "arachne";
-      registry = "ghcr.io/pleme-io/arachne";
-      packageName = "arachne";
-      namespace = "arachne-system";
-      architectures = ["amd64" "arm64"];
-      ports = { graphql = 8080; health = 8081; metrics = 9090; };
+  outputs = { self, nixpkgs, substrate, crate2nix, ... }: let
+    systems = ["aarch64-darwin" "x86_64-linux" "aarch64-linux"];
+    eachSystem = f: nixpkgs.lib.genAttrs systems f;
+  in {
+    # Dev shells for working on the library
+    devShells = eachSystem (system: let
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ substrate.overlays.${system}.rust ];
+      };
+    in {
+      default = pkgs.mkShell {
+        buildInputs = with pkgs; [
+          fenixRustToolchain
+          rust-analyzer
+          cargo-watch
+          openssl
+          postgresql
+          pkg-config
+          cmake
+          perl
+          crate2nix.packages.${system}.default
+        ];
+        RUST_SRC_PATH = "${pkgs.fenixRustToolchain}/lib/rustlib/src/rust/library";
+      };
+    });
+
+    # Generic home-manager module — requires package override from plugins overlay
+    homeManagerModules.default = import ./module {
+      hmHelpers = import "${substrate}/lib/hm-service-helpers.nix" { lib = nixpkgs.lib; };
     };
+
+    # Generic NixOS module — requires package override from plugins overlay
+    nixosModules.default = import ./module/nixos.nix;
+  };
 }

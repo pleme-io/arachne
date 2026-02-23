@@ -11,7 +11,7 @@ pub struct Cli {
 pub enum Command {
     /// Scrape profiles from a classifieds site
     Scrape {
-        /// Site to scrape (fatal_model, skokka)
+        /// Site crawler name (must be registered via App::register)
         #[arg(long)]
         site: String,
 

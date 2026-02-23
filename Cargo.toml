@@ -3,12 +3,8 @@ name = "arachne"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Classifieds scraper service with browser automation, photo deduplication, and S3 storage"
+description = "Generic classifieds scraping framework with browser automation, photo deduplication, and S3 storage"
 repository = "https://github.com/pleme-io/arachne"
-
-[[bin]]
-name = "arachne"
-path = "src/main.rs"
 
 [lib]
 name = "arachne"
@@ -18,9 +14,6 @@ path = "src/lib.rs"
 # Browser automation (CDP)
 chromiumoxide = { version = "0.7", features = ["tokio-runtime"], default-features = false }
 futures = "0.3"
-
-# HTML parsing
-scraper = "0.21"
 
 # HTTP (photo downloads)
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "stream"] }

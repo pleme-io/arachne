@@ -1,14 +1,14 @@
-pub mod fatal_model;
-
 use async_trait::async_trait;
 
 use crate::error::Result;
 use crate::models::{ProfileStub, ScrapedProfile};
 
 /// Trait for site-specific crawlers.
+///
+/// Implement this trait in a plugin crate and register it via [`crate::App::register`].
 #[async_trait]
 pub trait SiteCrawler: Send + Sync {
-    /// Site identifier (e.g., "fatal_model", "skokka").
+    /// Site identifier used as the key in the crawler registry.
     fn site_name(&self) -> &str;
 
     /// Discover profile stubs from a listing page.
