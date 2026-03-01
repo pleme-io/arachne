@@ -1,10 +1,15 @@
 [package]
-name = "arachne"
+name = "pleme-arachne"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
+authors = ["Pleme Team <team@pleme.io>"]
 description = "Generic classifieds scraping framework with browser automation, photo deduplication, and S3 storage"
 repository = "https://github.com/pleme-io/arachne"
+homepage = "https://github.com/pleme-io/arachne"
+keywords = ["scraping", "browser-automation", "classifieds", "deduplication", "s3"]
+categories = ["web-programming", "command-line-utilities"]
+exclude = ["module/", "target/", "result-*", "Cargo.nix", "flake.nix", "flake.lock"]
 
 [lib]
 name = "arachne"
