@@ -26,7 +26,7 @@
     devShells = eachSystem (system: let
       pkgs = import nixpkgs {
         inherit system;
-        overlays = [ substrate.overlays.${system}.rust ];
+        overlays = [ substrate.rustOverlays.${system}.rust ];
       };
     in {
       default = pkgs.mkShell {
