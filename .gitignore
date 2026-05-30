@@ -3,3 +3,4 @@
 .envrc.private
 result
 result-*
+Cargo.build-spec.json
